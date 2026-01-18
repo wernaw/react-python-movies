@@ -16,6 +16,8 @@ function App() {
             headers: {'Content-Type': 'application/json'}
         });
         if (response.ok) {
+            const movieWithID = await response.json();
+            movie.id = movieWithID.id;
             setMovies([...movies, movie]);
             setAddingMovie(false);
         }
