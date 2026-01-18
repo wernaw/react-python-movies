@@ -11,15 +11,23 @@ function App() {
     async function handleAddMovie(movie) {
         movie.actors = '';
         const response = await fetch('/movies', {
-        method: 'POST',
-        body: JSON.stringify(movie),
-        headers: { 'Content-Type': 'application/json' }
-      });
-      if (response.ok) {
-        setMovies([...movies, movie]);
-        setAddingMovie(false);
-      }
+            method: 'POST',
+            body: JSON.stringify(movie),
+            headers: {'Content-Type': 'application/json'}
+        });
+        if (response.ok) {
+            setMovies([...movies, movie]);
+            setAddingMovie(false);
+        }
     }
+
+    async function handleDeleteMovie(movie) {
+        const url = `/movies/${movie.id}`;
+        const response = await fetch(url, {method: 'DELETE'});
+        if (response.ok) {
+            setMovies(movies.filter(m => m !== movie));
+            }
+        }
 
     useEffect(() => {
         const fetchMovies = async () => {
@@ -37,8 +45,7 @@ function App() {
             <h1>My favourite movies to watch</h1>
             {movies.length === 0
                 ? <p>No movies yet. Maybe add something?</p>
-                : <MoviesList movies={movies}
-                              onDeleteMovie={(movie) => setMovies(movies.filter(m => m !== movie))}
+                : <MoviesList movies={movies} onDeleteMovie={handleDeleteMovie}
                 />}
             {addingMovie
                 ? <MovieForm onMovieSubmit={handleAddMovie}
