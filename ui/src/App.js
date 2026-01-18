@@ -1,5 +1,5 @@
 import './App.css';
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import "milligram";
 import MovieForm from "./MovieForm";
 import MoviesList from "./MoviesList";
@@ -20,6 +20,17 @@ function App() {
         setAddingMovie(false);
       }
     }
+
+    useEffect(() => {
+        const fetchMovies = async () => {
+            const response = await fetch(`/movies`);
+            if (response.ok) {
+                const movies = await response.json();
+                setMovies(movies);
+            }
+        };
+        fetchMovies();
+    }, []);
 
     return (
         <div className="container">
