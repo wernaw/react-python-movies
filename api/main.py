@@ -1,9 +1,10 @@
-from fastapi import FastAPI, Body
+from fastapi import FastAPI, Body, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import Any
-import sqlite3
+from db_utils import (fetch_one, fetch_all, insert_item, update_item,
+                      delete_item, delete_all_items, get_actors_for_movie)
 
 
 class Movie(BaseModel):
@@ -20,70 +21,58 @@ def serve_react_app():
    return FileResponse("../ui/build/index.html")
 
 @app.get('/movies')
-def get_movies():  # put application's code here
-    db = sqlite3.connect('movies.db')
-    cursor = db.cursor()
-    movies = cursor.execute('SELECT * FROM movies')
+def get_movies():
+    movies = fetch_all('movie')
 
-    output = []
-    for movie in movies:
-         movie = {'id': movie[0], 'title': movie[1], 'year': movie[2], 'actors': movie[3]}
-         output.append(movie)
-    return output
+    return [{'id': movie[0], 'title': movie[1], 'director': movie[2],
+             'year': movie[3], 'description': movie[4]} for movie in movies]
+
 
 @app.get('/movies/{movie_id}')
-def get_single_movie(movie_id:int):  # put application's code here
-    db = sqlite3.connect('movies.db')
-    cursor = db.cursor()
-    movie = cursor.execute(f"SELECT * FROM movies WHERE id={movie_id}").fetchone()
-    if movie is None:
-        return {'message': "Movie not found"}
-    return {'title': movie[1], 'year': movie[2], 'actors': movie[3]}
+def get_movie(movie_id: int):
+    movie = fetch_one('movie', movie_id)
 
-@app.post("/movies")
-def add_movie(movie: Movie):
-    db = sqlite3.connect('movies.db')
-    cursor = db.cursor()
-    cursor.execute(f"INSERT INTO movies (title, year, actors) VALUES ('{movie.title}', '{movie.year}', '{movie.actors}')")
-    db.commit()
-    return {
-        "message": f"Movie with id = {cursor.lastrowid} added successfully",
-        "id": cursor.lastrowid,
-    }
-    # movie = models.Movie.create(**movie.dict())
-    # return movie
+    if not movie:
+        raise HTTPException(status_code=404, detail="Movie not found")
 
-@app.put("/movies/{movie_id}")
-def update_movie(movie_id:int, params: dict[str, Any]):
-    db = sqlite3.connect('movies.db')
-    cursor = db.cursor()
-    cursor.execute(
-    "UPDATE movies SET title = ?, year = ?, actors = ? WHERE id = ?",
-    (params['title'], params['year'], params['actors'], movie_id)
-    )
-    db.commit()
-    if cursor.rowcount == 0:
-        return {"message": f"Movie with id = {movie_id} not found"}
-    return {"message": f"Movie with id = {cursor.lastrowid} updated successfully"}
-
-@app.delete("/movies/{movie_id}")
-def delete_movie(movie_id:int):
-    db = sqlite3.connect('movies.db')
-    cursor = db.cursor()
-    cursor.execute("DELETE FROM movies WHERE id = ?", (movie_id,))
-    db.commit()
-    if cursor.rowcount == 0:
-        return {"message": f"Movie with id = {movie_id} not found"}
-    return {"message": f"Movie with id = {movie_id} deleted successfully"}
-
-@app.delete("/movies")
-def delete_movies(movie_id:int):
-    db = sqlite3.connect('movies.db')
-    cursor = db.cursor()
-    cursor.execute("DELETE FROM movies")
-    db.commit()
-    return {"message": f"Deleted {cursor.rowcount} movies"}
+    return {'id': movie[0], 'title': movie[1], 'director': movie[2], 'year': movie[3], 'description': movie[4]}
 
 
-# if __name__ == '__main__':
-#     app.run()
+@app.post('/movies')
+def add_movie(params: dict[str, Any]):
+    required_fields = ['title', 'director', 'year', 'description']
+    missing = [f for f in required_fields if f not in params]
+
+    if missing:
+        raise HTTPException(status_code=400, detail=f"Missing required fields: {', '.join(missing)}")
+
+    movie_id = insert_item('movie', required_fields, [params[f] for f in required_fields])
+
+    return {"message": "Movie added successfully!", "id": movie_id}
+
+
+@app.put('/movies/{movie_id}')
+def update_movie(movie_id: int, params: dict[str, Any]):
+    updates = {k: v for k, v in params.items() if k in ['title', 'director', 'year', 'description']}
+
+    update_item('movie', movie_id, updates)
+
+    return {"message": "Movie updated successfully!"}
+
+
+@app.delete('/movies/{movie_id}')
+def delete_movie(movie_id: int):
+    delete_item('movie', movie_id)
+
+    return {"message": "Movie deleted successfully!"}
+
+
+@app.delete('/movies')
+def delete_all_movies():
+    count = delete_all_items('movie')
+
+    return {"message": "All movies deleted successfully!", "deleted_count": count}
+
+@app.get('/movies/{movie_id}/actors')
+def get_actor_for_movie(movie_id: int):
+    return get_actors_for_movie(movie_id)

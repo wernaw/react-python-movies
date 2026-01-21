@@ -21,7 +21,7 @@ export default function MovieForm(props) {
     return <form onSubmit={addMovie}>
         <h2>Add movie</h2>
         <div>
-            <label>Tytuł</label>
+            <label>Title</label>
             <input type="text" value={title} onChange={(event) => setTitle(event.target.value)}/>
         </div>
         <div>

@@ -4,12 +4,13 @@ import "milligram";
 import MovieForm from "./MovieForm";
 import MoviesList from "./MoviesList";
 
+
 function App() {
     const [movies, setMovies] = useState([]);
     const [addingMovie, setAddingMovie] = useState(false);
 
     async function handleAddMovie(movie) {
-        movie.actors = '';
+        movie.actors = [];
         const response = await fetch('/movies', {
             method: 'POST',
             body: JSON.stringify(movie),
@@ -31,12 +32,30 @@ function App() {
             }
         }
 
+    async function getActorsForMovie(movieId) {
+        const response = await fetch(`/movies/${movieId}/actors`);
+        if (!response.ok) {
+            return [];
+        }
+        return await response.json();
+    }
+
     useEffect(() => {
         const fetchMovies = async () => {
             const response = await fetch(`/movies`);
             if (response.ok) {
                 const movies = await response.json();
-                setMovies(movies);
+                const moviesWithActors = await Promise.all(
+                    movies.map(async (movie) => {
+                        const actors = await getActorsForMovie(movie.id);
+                        return {
+                            ...movie,
+                            actors
+                        };
+                    })
+                );
+
+                setMovies(moviesWithActors);
             }
         };
         fetchMovies();
