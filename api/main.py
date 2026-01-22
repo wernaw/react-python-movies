@@ -2,15 +2,21 @@ from fastapi import FastAPI, Body, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from typing import Any
-from db_utils import (fetch_one, fetch_all, insert_item, update_item,
-                      delete_item, delete_all_items, get_actors_for_movie)
+from typing import List
+from db_utils import (fetch_one, fetch_all, insert_item,
+                      delete_item, get_actors_for_movie)
 
+
+class Actor(BaseModel):
+    name: str = ""
+    surname: str = ""
 
 class Movie(BaseModel):
     title: str
     year: str
-    actors: str
+    director: str = ""
+    description: str = ""
+    actors: List[Actor]
 
 app = FastAPI()
 
@@ -19,6 +25,7 @@ app.mount("/static", StaticFiles(directory="../ui/build/static", check_dir=False
 @app.get("/")
 def serve_react_app():
    return FileResponse("../ui/build/index.html")
+
 
 @app.get('/movies')
 def get_movies():
@@ -39,39 +46,25 @@ def get_movie(movie_id: int):
 
 
 @app.post('/movies')
-def add_movie(params: dict[str, Any]):
-    required_fields = ['title', 'director', 'year', 'description']
-    missing = [f for f in required_fields if f not in params]
+def add_movie(movie: Movie):
+    movie_id = insert_item('movie', ['title', 'director', 'year', 'description'],
+                           [movie.title, movie.director, movie.year, movie.description])
 
-    if missing:
-        raise HTTPException(status_code=400, detail=f"Missing required fields: {', '.join(missing)}")
+    for actor in movie.actors or []:
+        if not actor.name or not actor.surname:
+            continue
 
-    movie_id = insert_item('movie', required_fields, [params[f] for f in required_fields])
+        actor_id = insert_item('actor', ['name', 'surname'], [actor.name, actor.surname])
+
+        insert_item('movie_actor_through', ['movie_id', 'actor_id'], [movie_id, actor_id])
 
     return {"message": "Movie added successfully!", "id": movie_id}
-
-
-@app.put('/movies/{movie_id}')
-def update_movie(movie_id: int, params: dict[str, Any]):
-    updates = {k: v for k, v in params.items() if k in ['title', 'director', 'year', 'description']}
-
-    update_item('movie', movie_id, updates)
-
-    return {"message": "Movie updated successfully!"}
-
 
 @app.delete('/movies/{movie_id}')
 def delete_movie(movie_id: int):
     delete_item('movie', movie_id)
 
     return {"message": "Movie deleted successfully!"}
-
-
-@app.delete('/movies')
-def delete_all_movies():
-    count = delete_all_items('movie')
-
-    return {"message": "All movies deleted successfully!", "deleted_count": count}
 
 @app.get('/movies/{movie_id}/actors')
 def get_actor_for_movie(movie_id: int):

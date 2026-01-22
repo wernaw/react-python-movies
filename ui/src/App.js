@@ -10,7 +10,6 @@ function App() {
     const [addingMovie, setAddingMovie] = useState(false);
 
     async function handleAddMovie(movie) {
-        movie.actors = [];
         const response = await fetch('/movies', {
             method: 'POST',
             body: JSON.stringify(movie),
@@ -66,11 +65,14 @@ function App() {
             <h1>My favourite movies to watch</h1>
             {movies.length === 0
                 ? <p>No movies yet. Maybe add something?</p>
-                : <MoviesList movies={movies} onDeleteMovie={handleDeleteMovie}
+                : <MoviesList
+                    movies={movies}
+                    onDeleteMovie={handleDeleteMovie}
                 />}
             {addingMovie
-                ? <MovieForm onMovieSubmit={handleAddMovie}
-                             buttonLabel="Add a movie"
+                ? <MovieForm
+                    onMovieSubmit={handleAddMovie}
+                    buttonLabel="Add a movie"
                 />
                 : <button onClick={() => setAddingMovie(true)}>Add a movie</button>}
         </div>
