@@ -128,3 +128,17 @@ ul.movies-list {
   color: red;
   transform: scale(1.1);
 }
+
+.movie-item {
+  padding: 0.5rem 0.25rem;
+  border-radius: 6px;
+  transition: background-color 0.3s;
+}
+
+.movie-item.new {
+  background-color: #d4edda;
+}
+
+.movie-item:hover {
+  background-color: #fff3b0;
+}

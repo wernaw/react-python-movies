@@ -4,7 +4,7 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
 export default function MovieListItem(props) {
     return (
-        <div>
+        <div className={`movie-item ${props.movie.isNew ? 'new' : ''}`}>
             <div>
                 <strong>{props.movie.title}</strong>
                 {' '}
