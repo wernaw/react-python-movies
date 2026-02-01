@@ -37,15 +37,16 @@ def insert_item(table: str, fields: List[str], values: List[Any]) -> int:
         return cursor.lastrowid
 
 
-def update_item(table: str, item_id: int, updates: Dict[str, Any]):
-    if not updates:
-        raise HTTPException(status_code=400, detail="No fields provided for update")
+def update_item(table: str, item_id: int, fields: List[str], values: List[Any]):
+    if not fields or not values or len(fields) != len(values):
+        raise HTTPException(status_code=400, detail="Fields and values must be provided and match in length")
 
-    fields = [f"{key} = ?" for key in updates.keys()]
-    values = list(updates.values()) + [item_id]
+    placeholders = ", ".join([f"{field} = ?" for field in fields])
+
+    params = tuple(values + [item_id])
 
     with get_db_cursor() as (db, cursor):
-        cursor.execute(f"UPDATE {table} SET {', '.join(fields)} WHERE id = ?", tuple(values))
+        cursor.execute(f"UPDATE {table} SET {placeholders} WHERE id = ?", params)
         if cursor.rowcount == 0:
             raise HTTPException(status_code=404, detail=f"{table.capitalize()} not found")
 

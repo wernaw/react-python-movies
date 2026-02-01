@@ -4,7 +4,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List
 from db_utils import (fetch_one, fetch_all, insert_item,
-                      delete_item, get_actors_for_movie)
+                      delete_item, get_actors_for_movie, update_item)
 
 
 class Actor(BaseModel):
@@ -16,7 +16,7 @@ class Movie(BaseModel):
     year: str
     director: str = ""
     description: str = ""
-    actors: List[Actor]
+    actors: List[Actor] = []
 
 app = FastAPI()
 
@@ -69,3 +69,11 @@ def delete_movie(movie_id: int):
 @app.get('/movies/{movie_id}/actors')
 def get_actor_for_movie(movie_id: int):
     return get_actors_for_movie(movie_id)
+
+@app.put('/movies/{movie_id}')
+def update_movie(movie_id: int, movie: Movie):
+    update_item('movie', movie_id,
+                ['title','director','year','description'],
+                [movie.title, movie.director, movie.year, movie.description])
+
+    return {"message": "Movie updated successfully!"}

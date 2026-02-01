@@ -103,6 +103,29 @@ function App() {
       });
     }
 
+    async function handleUpdateMovie(updatedMovie) {
+      const response = await fetch(`/movies/${updatedMovie.id}`, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          title: updatedMovie.title,
+          year: updatedMovie.year,
+          director: updatedMovie.director,
+          description: updatedMovie.description,
+          actors: []
+        })
+      });
+
+      if (response.ok) {toast.success("Movie updated successfully!")
+        setMovies(prev =>
+          prev.map(m => (m.id === updatedMovie.id ? updatedMovie : m))
+        );
+      }
+      else {
+        toast.error("Failed to update movie");
+      }
+    }
+
     return (
         <div className="container">
             <ToastContainer position="top-center" autoClose={2000} />
@@ -118,6 +141,7 @@ function App() {
                 <MoviesList
                   movies={movies}
                   onDeleteMovie={handleDeleteMovie}
+                  onUpdateMovie={handleUpdateMovie}
                 />
               )}
 

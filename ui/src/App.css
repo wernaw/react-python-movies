@@ -41,7 +41,9 @@ ul.movies-list {
   list-style: none;
 }
 
-
+.lds-grid {
+  color: #ebc800
+}
 .lds-grid,
 .lds-grid div {
   box-sizing: border-box;
@@ -126,6 +128,21 @@ ul.movies-list {
 
 .delete-btn:hover {
   color: red;
+  transform: scale(1.1);
+}
+
+.edit-btn {
+  color: #8a8883;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.3s, transform 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.edit-btn:hover {
+  color: #02ac94;
   transform: scale(1.1);
 }
 
