@@ -62,8 +62,10 @@ export default function MovieListItem(props) {
           onChange={e => handleChange("description", e.target.value)}
           placeholder="Description"
         />
+          <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
         <button type="submit">Save</button>
-        <button type="edit-btn" onClick={() => setEditing(false)}>Cancel</button>
+        <button type="button" onClick={() => setEditing(false)}>Cancel</button>
+          </div>
       </form>
     );
   }
