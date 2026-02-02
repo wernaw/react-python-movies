@@ -3,6 +3,8 @@ import {useState, useEffect} from "react";
 import "milligram";
 import MovieForm from "./MovieForm";
 import MoviesList from "./MoviesList";
+import ActorForm from "./ActorForm";
+import ActorsList from "./ActorsList";
 import Loader from "./Loader";
 import {ToastContainer, toast } from 'react-toastify';
 
@@ -11,6 +13,8 @@ function App() {
     const [movies, setMovies] = useState([]);
     const [addingMovie, setAddingMovie] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [actors, setActors] = useState([]);
+    const [addingActor, setAddingActor] = useState(false);
 
     async function handleAddMovie(movie) {
         const response = await fetch('/movies', {
@@ -18,8 +22,7 @@ function App() {
             body: JSON.stringify(movie),
             headers: {'Content-Type': 'application/json'}
         });
-        if (response.ok) {
-            toast.success ("Movie added successfully!");
+        if (response.ok) {toast.success ("Movie added successfully!");
             const movieWithID = await response.json();
             movie.id = movieWithID.id;
             movie.isNew = true;
@@ -28,10 +31,32 @@ function App() {
             setAddingMovie(false);
 
             setTimeout(() => {
-              setMovies(prev => prev.map(m => m.id === movie.id ? { ...m, isNew: false } : m));
+                setMovies(prev => prev.map(m => m.id === movie.id ? { ...m, isNew: false } : m));
             }, 2000);
         }
         else {toast.error ("Failed to add movie")}
+    }
+
+    async function handleAddActor(actor) {
+        const response = await fetch('/actors', {
+        method: 'POST',
+        body: JSON.stringify(actor),
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (response.ok) {toast.success ("Actor added successfully!")
+          const actorWithID = await response.json();
+          actor.id = actorWithID.id;
+          actor.isNew = true;
+
+        setActors([...actors, actor]);
+        setAddingActor(false);
+
+        setTimeout(() => {
+            setActors(prev => prev.map(a => a.id === actor.id ? { ...a, isNew: false } : a));
+            }, 2000);
+      }
+      else {toast.error ("Failed to add actor")}
     }
 
     async function handleDeleteMovie(movie) {
@@ -45,6 +70,19 @@ function App() {
             setMovies(movies.filter(m => m !== movie));
         }
         else {toast.error ("Failed to delete movie")}
+        }
+
+    async function handleDeleteActor(actor) {
+        if (!(await confirmDelete("Are you sure you want to delete this actor?"))) {
+            return;
+          }
+
+        const url = `/actors/${actor.id}`;
+        const response = await fetch(url, {method: 'DELETE'});
+        if (response.ok) {toast.success ("Actor deleted successfully!")
+            setActors(actors.filter(a => a !== actor));
+        }
+        else {toast.error ("Failed to delete actor")}
         }
 
     async function getActorsForMovie(movieId) {
@@ -78,6 +116,21 @@ function App() {
             setLoading(false);
         };
         fetchMovies();
+    }, []);
+
+    useEffect(() => {
+        const fetchActors = async () => {
+            setLoading(true);
+
+            const response = await fetch(`/actors`);
+            if (response.ok) {
+                const actors = await response.json();
+                setActors(actors);
+            }
+            else {toast.error ("Sorry! We couldn't load actors")}
+            setLoading(false);
+        };
+        fetchActors();
     }, []);
 
      function confirmDelete(message) {
@@ -129,30 +182,60 @@ function App() {
     return (
         <div className="container">
             <ToastContainer position="top-center" autoClose={2000} />
+            <div className="row">
             <h1>My favourite movies to watch</h1>
-            {loading ? (
-                <div style={{display: "flex", justifyContent: "center", alignItems: "center",
-                    marginTop: "2rem", minHeight: "500px"}}>
-                  <Loader />
-                </div>
-              ) : movies.length === 0 ? (
-                <p>No movies yet. Maybe add something?</p>
-              ) : (
-                <MoviesList
-                  movies={movies}
-                  onDeleteMovie={handleDeleteMovie}
-                  onUpdateMovie={handleUpdateMovie}
-                />
-              )}
+            </div>
+            <div className="row">
+            <div className="column">
+                {loading ? (
+                    <div style={{display: "flex", justifyContent: "center", alignItems: "center",
+                        marginTop: "2rem", minHeight: "500px"}}>
+                      <Loader />
+                    </div>
+                  ) : movies.length === 0 ? (
+                    <p>No movies yet. Maybe add something?</p>
+                  ) : (
+                    <MoviesList
+                      movies={movies}
+                      onDeleteMovie={handleDeleteMovie}
+                      onUpdateMovie={handleUpdateMovie}
+                    />
+                  )}
 
-             {addingMovie
-                ? <MovieForm
-                    onMovieSubmit={handleAddMovie}
-                    buttonLabel="Add a movie"
-                />
-                : <button onClick={() => setAddingMovie(true)}>Add a movie</button>}
-        </div>
-    );
+                 {addingMovie
+                    ? <MovieForm
+                        onMovieSubmit={handleAddMovie}
+                        buttonLabel="Add a movie"
+                    />
+                    : <button onClick={() => setAddingMovie(true)}>Add a movie</button>}
+                </div>
+
+                <div className="column column-25">
+                    {loading ? (
+                    <div style={{display: "flex", justifyContent: "center", alignItems: "center",
+                        marginTop: "2rem", minHeight: "500px"}}>
+                      <Loader />
+                    </div>
+                  ) :
+                    actors.length === 0 ? (
+                        <p>No actors yet</p>
+                    ) : (
+                        <ActorsList
+                            actors={actors}
+                            onDeleteActor={handleDeleteActor}
+                        />
+                    )
+                    }
+                    {addingActor
+                        ? <ActorForm
+                            onActorSubmit={handleAddActor}
+                            buttonLabel="Add an actor"
+                        />
+                        : <button onClick={() => setAddingActor(true)}>Add an actor</button>}
+                </div>
+                </div>
+            </div>
+        );
 }
 
 export default App;

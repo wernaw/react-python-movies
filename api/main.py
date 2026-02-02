@@ -8,8 +8,8 @@ from db_utils import (fetch_one, fetch_all, insert_item,
 
 
 class Actor(BaseModel):
-    name: str = ""
-    surname: str = ""
+    name: str
+    surname: str
 
 class Movie(BaseModel):
     title: str
@@ -62,7 +62,7 @@ def add_movie(movie: Movie):
 
 @app.delete('/movies/{movie_id}')
 def delete_movie(movie_id: int):
-    id_links = get_movie_actor_links(movie_id)
+    id_links = get_movie_actor_links(movie_id=movie_id)
 
     for link_id in id_links:
         delete_item('movie_actor_through', link_id)
@@ -82,3 +82,27 @@ def update_movie(movie_id: int, movie: Movie):
                 [movie.title, movie.director, movie.year, movie.description])
 
     return {"message": "Movie updated successfully!"}
+
+@app.get('/actors')
+def get_actors():
+    actors = fetch_all('actor')
+
+    return [{'id': actor[0], 'name': actor[1], 'surname': actor[2]} for actor in actors]
+
+@app.post('/actors')
+def add_actor(actor: Actor):
+    actor_id = insert_item('actor', ['name', 'surname'],
+                           [actor.name, actor.surname])
+
+    return {"message": "Actor added successfully!", "id": actor_id}
+
+@app.delete('/actors/{actor_id}')
+def delete_actor(actor_id: int):
+    id_links = get_movie_actor_links(actor_id=actor_id)
+
+    for link_id in id_links:
+        delete_item('movie_actor_through', link_id)
+
+    delete_item('actor', actor_id)
+
+    return {"message": "Actor deleted successfully!"}

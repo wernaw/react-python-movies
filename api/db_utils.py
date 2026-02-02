@@ -1,5 +1,5 @@
 import sqlite3
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Optional
 from contextlib import contextmanager
 from fastapi import HTTPException
 
@@ -81,16 +81,38 @@ def get_actors_for_movie(movie_id: int) -> list[dict]:
 
     return [{"name": name, "surname": surname} for name, surname in actors]
 
-def get_movie_actor_links(movie_id: int) -> List[int]:
-    movie = fetch_one('movie', movie_id)
-    if not movie:
-        raise HTTPException(status_code=404, detail="Movie not found")
+def get_movie_actor_links(
+    movie_id: Optional[int] = None,
+    actor_id: Optional[int] = None
+) -> List[int]:
+
+    if movie_id is None and actor_id is None:
+        raise HTTPException(
+            status_code=400,
+            detail="movie_id or actor_id must be provided"
+        )
+
+    conditions = []
+    params = []
+
+    if movie_id is not None:
+        if not fetch_one('movie', movie_id):
+            raise HTTPException(status_code=404, detail="Movie not found")
+        conditions.append("movie_id = ?")
+        params.append(movie_id)
+
+    if actor_id is not None:
+        if not fetch_one('actor', actor_id):
+            raise HTTPException(status_code=404, detail="Actor not found")
+        conditions.append("actor_id = ?")
+        params.append(actor_id)
+
+    where_clause = " AND ".join(conditions)
 
     with get_db_cursor() as (db, cursor):
         rows = cursor.execute(
-            "SELECT id FROM movie_actor_through WHERE movie_id = ?",
-            (movie_id,)
+            f"SELECT id FROM movie_actor_through WHERE {where_clause}",
+            tuple(params)
         ).fetchall()
 
     return [row[0] for row in rows]
-

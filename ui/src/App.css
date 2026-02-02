@@ -41,6 +41,10 @@ ul.movies-list {
   list-style: none;
 }
 
+ul.actor-list {
+  list-style: none;
+}
+
 .lds-grid {
   color: #ebc800
 }
@@ -158,4 +162,18 @@ ul.movies-list {
 
 .movie-item:hover {
   background-color: #fff3b0;
+}
+
+.actor-item {
+  padding: 0.2rem 0.25rem;
+  border-radius: 6px;
+  transition: background-color 0.3s;
+}
+
+.actor-item.new {
+  background-color: #d4edda;
+}
+
+.actor-item:hover {
+  background-color: rgba(221, 185, 200, 0.65);
 }
