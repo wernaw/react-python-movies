@@ -98,6 +98,29 @@ function App() {
         else {toast.error ("Failed to delete actor")}
         }
 
+    async function handleAssignActorToMovie(actorId, movieId) {
+        if (!movieId) {
+            toast.error("Please select a movie");
+            return;
+        }
+
+        const response = await fetch(`/movies/${movieId}/actors/${actorId}`, {
+            method: 'POST'
+        });
+
+        if (response.ok) {
+            toast.success("Actor assigned to movie!");
+            const updatedActors = await getActorsForMovie(movieId);
+            setMovies(prevMovies =>
+                prevMovies.map(movie =>
+                    movie.id === Number(movieId) ? { ...movie, actors: updatedActors } : movie
+                )
+            );
+        } else {
+            toast.error("Failed to assign actor to movie");
+        }
+    }
+
     async function getActorsForMovie(movieId) {
         const response = await fetch(`/movies/${movieId}/actors`);
         if (!response.ok) {
@@ -199,7 +222,7 @@ function App() {
             <h1>My favourite movies to watch</h1>
             </div>
             <div className="row">
-            <div className="column">
+            <div className="movies-column">
                 {loading ? (
                     <div style={{display: "flex", justifyContent: "center", alignItems: "center",
                         marginTop: "2rem", minHeight: "500px"}}>
@@ -223,7 +246,7 @@ function App() {
                     : <button onClick={() => setAddingMovie(true)}>Add a movie</button>}
                 </div>
 
-                <div className="column column-25">
+                <div className="actors-column">
                     {loading ? (
                     <div style={{display: "flex", justifyContent: "center", alignItems: "center",
                         marginTop: "2rem", minHeight: "500px"}}>
@@ -235,7 +258,9 @@ function App() {
                     ) : (
                         <ActorsList
                             actors={actors}
+                            movies={movies}
                             onDeleteActor={handleDeleteActor}
+                            onAssignActorToMovie={handleAssignActorToMovie}
                         />
                     )
                     }

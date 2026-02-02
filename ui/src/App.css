@@ -28,6 +28,11 @@
   color: #61dafb;
 }
 
+.container .row h1 {
+  text-align: center;
+  width: 100%;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
@@ -135,6 +140,21 @@ ul.actor-list {
   transform: scale(1.1);
 }
 
+.assign-btn {
+  color: #8a8883;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.3s, transform 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.assign-btn:hover {
+  color: #02ac94;
+  transform: scale(1.1);
+}
+
 .edit-btn {
   color: #8a8883;
   cursor: pointer;
@@ -176,4 +196,49 @@ ul.actor-list {
 
 .actor-item:hover {
   background-color: rgba(221, 185, 200, 0.65);
+}
+
+.actor-details {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.actor-assign {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  flex-wrap: nowrap;
+}
+
+.actor-assign select {
+  margin-bottom: 0;
+  flex: 1;
+  font-size: 1.1rem;
+  height: 2.8rem;
+}
+
+.submit-btn {
+  background-color: #6f2dbd;
+  border-color: #6f2dbd;
+  color: #fff;
+  font-size: 1.1rem;
+  padding: 0.3rem 1rem;
+  height: 2.8rem;
+}
+
+.submit-btn:hover {
+  background-color: #5a23a0;
+  border-color: #5a23a0;
+}
+
+.actors-column {
+  flex: 0 0 350px;
+}
+
+.movies-column {
+  flex: 0 0 650px;
+    margin-right: 100px
 }

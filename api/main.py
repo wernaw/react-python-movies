@@ -75,6 +75,20 @@ def delete_movie(movie_id: int):
 def get_actor_for_movie(movie_id: int):
     return get_actors_for_movie(movie_id)
 
+@app.post('/movies/{movie_id}/actors/{actor_id}')
+def add_actor_to_movie(movie_id: int, actor_id: int):
+    if not fetch_one('movie', movie_id):
+        raise HTTPException(status_code=404, detail="Movie not found")
+    if not fetch_one('actor', actor_id):
+        raise HTTPException(status_code=404, detail="Actor not found")
+
+    existing_links = get_movie_actor_links(movie_id=movie_id, actor_id=actor_id)
+    if existing_links:
+        return {"message": "Actor already assigned to movie"}
+
+    link_id = insert_item('movie_actor_through', ['movie_id', 'actor_id'], [movie_id, actor_id])
+    return {"message": "Actor assigned to movie!", "id": link_id}
+
 @app.put('/movies/{movie_id}')
 def update_movie(movie_id: int, movie: Movie):
     update_item('movie', movie_id,

@@ -28,7 +28,9 @@ export default function ActorsList(props) {
               >
                 <ActorListItem
                   actor={actor}
+                  movies={props.movies}
                   onDelete={() => props.onDeleteActor(actor)}
+                  onAssign={props.onAssignActorToMovie}
                 />
               </animated.li>
             ))}
