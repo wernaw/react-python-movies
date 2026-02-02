@@ -90,7 +90,7 @@ export default function MovieListItem(props) {
         <span>
           <strong>Actors:</strong>{" "}
           {props.movie.actors.map((actor, index) => (
-            <span key={index}>
+            <span key={actor.id}>
               {actor.name} {actor.surname}
               {index < props.movie.actors.length - 1 && ", "}
             </span>

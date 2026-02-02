@@ -33,6 +33,12 @@ function App() {
             setTimeout(() => {
                 setMovies(prev => prev.map(m => m.id === movie.id ? { ...m, isNew: false } : m));
             }, 2000);
+
+            const actorsResponse = await fetch('/actors');
+            if (actorsResponse.ok) {
+                const updatedActors = await actorsResponse.json();
+                setActors(updatedActors);
+            }
         }
         else {toast.error ("Failed to add movie")}
     }
@@ -81,6 +87,13 @@ function App() {
         const response = await fetch(url, {method: 'DELETE'});
         if (response.ok) {toast.success ("Actor deleted successfully!")
             setActors(actors.filter(a => a !== actor));
+
+            setMovies(prevMovies =>
+                prevMovies.map(movie => ({
+                    ...movie,
+                    actors: movie.actors ? movie.actors.filter(a => a.id !== actor.id) : []
+                }))
+            );
         }
         else {toast.error ("Failed to delete actor")}
         }

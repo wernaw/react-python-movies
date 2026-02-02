@@ -71,7 +71,7 @@ def get_actors_for_movie(movie_id: int) -> list[dict]:
 
     with get_db_cursor() as (db, cursor):
         actors = cursor.execute(
-            "SELECT name, surname FROM actor a "
+            "SELECT a.id, a.name, a.surname FROM actor a "
             "JOIN movie_actor_through atm ON a.id = atm.actor_id "
             "WHERE atm.movie_id = ?", (movie_id,)
         ).fetchall()
@@ -79,7 +79,7 @@ def get_actors_for_movie(movie_id: int) -> list[dict]:
     if not actors:
         return []
 
-    return [{"name": name, "surname": surname} for name, surname in actors]
+    return [{"id": actor_id, "name": name, "surname": surname} for actor_id, name, surname in actors]
 
 def get_movie_actor_links(
     movie_id: Optional[int] = None,
