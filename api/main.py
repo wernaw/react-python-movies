@@ -4,7 +4,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List
 from db_utils import (fetch_one, fetch_all, insert_item,
-                      delete_item, get_actors_for_movie, update_item)
+                      delete_item, get_actors_for_movie, update_item, get_movie_actor_links)
 
 
 class Actor(BaseModel):
@@ -62,6 +62,11 @@ def add_movie(movie: Movie):
 
 @app.delete('/movies/{movie_id}')
 def delete_movie(movie_id: int):
+    id_links = get_movie_actor_links(movie_id)
+
+    for link_id in id_links:
+        delete_item('movie_actor_through', link_id)
+
     delete_item('movie', movie_id)
 
     return {"message": "Movie deleted successfully!"}

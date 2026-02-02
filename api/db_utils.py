@@ -80,3 +80,17 @@ def get_actors_for_movie(movie_id: int) -> list[dict]:
         return []
 
     return [{"name": name, "surname": surname} for name, surname in actors]
+
+def get_movie_actor_links(movie_id: int) -> List[int]:
+    movie = fetch_one('movie', movie_id)
+    if not movie:
+        raise HTTPException(status_code=404, detail="Movie not found")
+
+    with get_db_cursor() as (db, cursor):
+        rows = cursor.execute(
+            "SELECT id FROM movie_actor_through WHERE movie_id = ?",
+            (movie_id,)
+        ).fetchall()
+
+    return [row[0] for row in rows]
+
